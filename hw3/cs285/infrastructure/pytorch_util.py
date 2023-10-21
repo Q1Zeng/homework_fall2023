@@ -69,6 +69,7 @@ def init_gpu(use_gpu=True, gpu_id=0):
     if torch.cuda.is_available() and use_gpu:
         device = torch.device("cuda:" + str(gpu_id))
         print("Using GPU id {}".format(gpu_id))
+        print(torch.cuda.get_device_name(device))
     else:
         device = torch.device("cpu")
         print("Using CPU.")
