@@ -196,7 +196,7 @@ class SoftActorCritic(nn.Module):
             next_action = next_action_distribution.sample()
 
             # Compute the next Q-values for the sampled actions
-            next_qs = self.target_critic(obs, next_action)
+            next_qs = self.target_critic(next_obs, next_action)
 
             # Handle Q-values from multiple different target critic networks (if necessary)
             # (For double-Q, clip-Q, etc.)
@@ -214,7 +214,7 @@ class SoftActorCritic(nn.Module):
 
             # Compute the target Q-value
             # target_values: torch.Tensor = ...
-            target_values: torch.Tensor = reward + (1 - done.int()) * self.discount * next_qs
+            target_values: torch.Tensor = reward + torch.logical_not(done) * self.discount * next_qs
 
             assert target_values.shape == (
                 self.num_critic_networks,
@@ -260,7 +260,7 @@ class SoftActorCritic(nn.Module):
 
         with torch.no_grad():
             # TODO(student): draw num_actor_samples samples from the action distribution for each batch element
-            action = action_distribution.sample_n(self.num_actor_samples)
+            action = action_distribution.sample((self.num_actor_samples, ))
             assert action.shape == (
                 self.num_actor_samples,
                 batch_size,
@@ -286,7 +286,7 @@ class SoftActorCritic(nn.Module):
         # loss = ...
 
         log_probs = action_distribution.log_prob(action)
-        loss = -torch.mean(log_probs * q_values)
+        loss = -torch.mean(log_probs * advantage)
 
         return loss, torch.mean(self.entropy(action_distribution))
 
@@ -307,7 +307,7 @@ class SoftActorCritic(nn.Module):
         q_values = self.critic(obs, action)
 
         # TODO(student): Compute the actor loss
-        loss = -torch.mean(q_values)
+        loss = torch.mean(-q_values)
         # print(loss.shape, q_values.shape)
         return loss, torch.mean(self.entropy(action_distribution))
 

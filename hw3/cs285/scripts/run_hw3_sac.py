@@ -69,7 +69,7 @@ def run_training_loop(config: dict, logger: Logger, args: argparse.Namespace):
         else:
             # TODO(student): Select an action
             # action = ...
-            action = agent.get_action(observation=observation)
+            action = agent.get_action(observation)
 
         # Step the environment and add the data to the replay buffer
         next_observation, reward, done, info = env.step(action)
